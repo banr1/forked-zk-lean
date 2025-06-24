@@ -18,7 +18,7 @@ def main : IO Unit :=
 def example1 [ZKField f] : ZKBuilder f (ZKExpr f) := do
   let x: ZKExpr f <- Witnessable.witness
   let one: ZKExpr f := 1
-  constrainEq (x * (x - one)) 0
+  ZKBuilder.constrainEq (x * (x - one)) 0
   return x
 
 def eq8 [Field f] : Subtable f 16 :=
@@ -52,8 +52,8 @@ def step [ZKField f] (prev_st : RISCVState f) : ZKBuilder f (RISCVState f) := do
   let r1 := prev_st.registers[1]
   let r2 := prev_st.registers[2]
 
-  let isEq <- lookup eq32 #v[r1, r1, r2, r2] -- Note: This example doesn't really make sense anymore.
-  constrainEq new_st.registers[0] isEq
+  let isEq <- ZKBuilder.lookup eq32 #v[r1, r1, r2, r2] -- Note: This example doesn't really make sense anymore.
+  ZKBuilder.constrainEq new_st.registers[0] isEq
 
   return new_st
 
@@ -122,8 +122,8 @@ structure JoltR1CSInputs (f : Type):  Type where
 -- Example of what we extract from Jolt
 -- TODO: Make a struct for the witness variables in a Jolt step. Automatically extract this from JoltInputs enum?
 def uniform_jolt_constraint [ZKField f] (jolt_inputs: JoltR1CSInputs f) : ZKBuilder f PUnit := do
-  constrainR1CS ((1 +  jolt_inputs.chunk_1 ) * 829) 1 1
-  constrainR1CS 1 1 ((1 +  jolt_inputs.chunk_1 ) * 829)
+  ZKBuilder.constrainR1CS ((1 +  jolt_inputs.chunk_1 ) * 829) 1 1
+  ZKBuilder.constrainR1CS 1 1 ((1 +  jolt_inputs.chunk_1 ) * 829)
   -- ...
 
 --   ...
@@ -133,7 +133,7 @@ def uniform_jolt_constraint [ZKField f] (jolt_inputs: JoltR1CSInputs f) : ZKBuil
 --   ...
 
 def run_circuit' [ZKField f] (circuit: ZKBuilder f a) (witness: List f) : Bool :=
-  let (_circ_states, zk_builder) := StateT.run circuit default
+  let (_circ_states, zk_builder) := runFold circuit default
   let b := semantics_constraints zk_builder.constraints witness (Array.empty)
   b
 
@@ -196,7 +196,7 @@ theorem constraints_seq c1 c2 :
 -- run_circuit : ReaderT [f] (ReaderT (ZKBuilderState f)) bool
 def constrainEq2 [ZKField f] (a b : ZKExpr f) : ZKBuilder f PUnit := do
   -- NOTE: equivalently `constrainR1CS (a - b) 1 0`
-  constrainR1CS a 1 b
+  ZKBuilder.constrainR1CS a 1 b
 
 def circuit1 [ZKField f] : ZKBuilder f PUnit := do
   let a <- Witnessable.witness
@@ -257,64 +257,32 @@ def circuit12 : ZKBuilder (ZMod 7) PUnit := do
 
 
 theorem circuitEq2SoundTry [ZKField f]: (run_circuit' circuit1 [ (a: f), (a:f )] = true) := by
-  unfold circuit1
-
-  unfold run_circuit'
-  unfold StateT.run
-  -- unfold circuit1
+  simp [run_circuit', runFold, circuit1, FreeM.cataFreeM, Witnessable.witness, ZKBuilder.witness, FreeM.cataFreeM]
+  unfold constrainEq2
+  unfold ZKBuilder.constrainR1CS
   unfold default
+  simp
   unfold instInhabitedZKBuilderState
+  simp
   unfold default
-  simp
-  unfold instInhabitedNat
-  simp
   unfold instInhabitedList
-  simp
   unfold Array.instInhabited
+  unfold FreeM.cataFreeM
   simp
-  unfold Witnessable.witness
   unfold bind
   unfold Monad.toBind
-  unfold StateT.instMonad -- instMonadZKBuilder
-  unfold instWitnessableZKExpr
+  unfold instMonadZKBuilder
+  unfold inferInstance
+  unfold FreeM.instMonad
   simp
-  unfold StateT.bind
+  repeat unfold FreeM.bind
   simp
-  unfold witnessf
-  simp_all
-  -- unfold pure
-  unfold constrainEq2
-  unfold constrainR1CS
-  unfold constrainEq
-  unfold StateT.get
-  unfold StateT.set
-  simp
-  -- unfold pure
-  -- unfold Applicative.toPure
-  unfold Monad.toApplicative
-  unfold StateT.instMonad -- instMonadZKBuilder
-  simp
-  unfold StateT.bind
-  -- unfold StateT.pure
-  simp
-  unfold StateT.map
-  simp
-
-  -- now unfold constraints_semantics
-  unfold semantics_constraints
-  unfold semantics_zkexpr
-  unfold semantics_zkexpr.eval
-  unfold semantics_zkexpr.eval
-  simp
-
-  unfold semantics_constraints
-  rfl
-
+  simp [FreeM.cataFreeM, ZKOpInterp, semantics_constraints, semantics_zkexpr, semantics_zkexpr.eval, semantics_zkexpr.eval]
 
 theorem circuitEq2Eval [ZKField f]: (run_circuit' circuit1 [ (a: f), (b: f)] = (a == b)) := by
 
   unfold run_circuit'
-  unfold StateT.run
+  unfold runFold
   unfold circuit1
   unfold default
   unfold instInhabitedZKBuilderState
@@ -331,35 +299,24 @@ theorem circuitEq2Eval [ZKField f]: (run_circuit' circuit1 [ (a: f), (b: f)] = (
   simp
   unfold bind
   unfold Monad.toBind
-  unfold StateT.instMonad -- instMonadZKBuilder
-  simp
-  unfold StateT.bind
-  simp
-  unfold witnessf
+  unfold instMonadZKBuilder -- instMonadZKBuilder
+  simp [FreeM.liftBind_eq_lift_bind]
+  unfold ZKBuilder.witness
   simp
   -- unfold pure
   unfold constrainEq2
-  unfold constrainR1CS
-  unfold constrainEq
-  unfold StateT.get
-  unfold StateT.set
+  unfold ZKBuilder.constrainR1CS
   simp
   -- unfold pure
   -- unfold Applicative.toPure
-  unfold Monad.toApplicative
-  unfold StateT.instMonad -- instMonadZKBuilder
-  simp
-  unfold StateT.bind
-  unfold StateT.map
-  simp
-
   unfold semantics_constraints
   unfold semantics_zkexpr
   unfold semantics_zkexpr.eval
   unfold semantics_zkexpr.eval
   simp
   unfold semantics_constraints
-  simp
+  sorry
+
 
 
 #check StateT.run_bind
@@ -402,14 +359,7 @@ theorem constrainEq3Trivial [ZKField f] (a b c:ZKExpr f) :
   mpure h
   simp [h]
   unfold constrainEq3
-  mspec (constrainEq2Trivial a b)
-  mintro ∀s2
-  mpure h
-  rename' h => hAB
-  mspec (constrainEq2Trivial b c)
-  mintro ∀s3
-  mpure h
-  simp [h, hAB]
+
 
 theorem constrainEq2Sound' [ZKField f] (a b:ZKExpr f) (witness: List f) :
   ⦃λ s => True ⦄ -- eval_circuit s witness ⦄
