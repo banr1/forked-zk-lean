@@ -2,7 +2,7 @@ import Std.Data.HashMap.Basic
 import ZkLean.AST
 import ZkLean.LookupTable
 import ZkLean.FreeMonad
-import MPL  -- Added to provide the `MPL.WP` machinery
+import MPL
 
 /-- Type for RAM operations (Read and Write) -/
 inductive RamOp (f : Type) where
