@@ -342,7 +342,23 @@ theorem constrainEq3Trivial [ZKField f] (a b c:ZKExpr f) :
   mpure h
   simp [h]
   unfold constrainEq3
-  sorry
+  unfold constrainEq2
+  unfold ZKBuilder.constrainR1CS
+  simp
+  unfold MPL.PredTrans.apply
+  unfold bind
+  unfold Monad.toBind
+  unfold instMonadZKBuilder
+  unfold inferInstance
+  unfold FreeM.instMonad
+  simp
+  repeat unfold FreeM.bind
+  constructor
+
+@[simp]
+lemma isSome_eq_true_iff {α : Type*} {o : Option α} :
+  o.isSome = true ↔ ∃ x, o = some x :=
+  by cases o <;> simp
 
 theorem constrainEq2Sound' [ZKField f] (a b:ZKExpr f) (witness: List f) :
   ⦃λ s => True ⦄ -- eval_circuit s witness ⦄
@@ -352,8 +368,65 @@ theorem constrainEq2Sound' [ZKField f] (a b:ZKExpr f) (witness: List f) :
     eval_exprf a s witness == eval_exprf b s witness ⌝
   ⦄
   := by
-
-  sorry
+  simp [run_circuit', runFold, circuit1, FreeM.cataFreeM, Witnessable.witness, ZKBuilder.witness, FreeM.cataFreeM]
+  unfold constrainEq2
+  unfold ZKBuilder.constrainR1CS
+  simp
+  unfold MPL.Triple
+  simp [MPL.SPred.entails]
+  intro s'
+  unfold MPL.PredTrans.apply
+  unfold MPL.wp
+  unfold instWPZKBuilderArgZKBuilderStatePureOfZero
+  unfold MPL.PredTrans.pure
+  simp [runFold]
+  simp [eval_circuit, FreeM.cataFreeM, ZKOpInterp, eval_exprf, semantics, semantics_constraints]
+  unfold ZKBuilderState.ram_sizes
+  simp [semantics_zkexpr]
+  simp [semantics_zkexpr.eval]
+  constructor
+  intro h
+  cases h' : (semantics_ram witness s'.3 s'.ram_ops)
+  · simp
+  · case mp.some v =>
+    rw [h'] at h
+    simp at *
+    cases h₁ : Option.isSome (semantics_zkexpr.eval witness v a)
+    · simp at h₁
+      simp [h₁] at h
+    · unfold Option.isSome at h₁
+      have exists_x : ∃ x, semantics_zkexpr.eval witness v a = some x := by
+        apply isSome_eq_true_iff.mp h₁
+      cases' exists_x with x hx
+      simp [hx] at h
+      cases h₂ : Option.isSome (semantics_zkexpr.eval witness v b)
+      · simp at h₂
+        simp [h₂] at h
+      · unfold Option.isSome at h₂
+        have exists_y : ∃ y, semantics_zkexpr.eval witness v b = some y := by
+          apply isSome_eq_true_iff.mp h₂
+        cases' exists_y with y hy
+        simp [hy] at h
+        cases' h with xeqy constraints
+        simp [xeqy] at hx
+        simp [constraints] at hy
+        rw [← hy] at hx
+        exact hx
+  · intro h
+    cases h' : (semantics_ram witness s'.3 s'.ram_ops)
+    simp at h
+    simp
+    simp [h'] at h
+    unfold semantics_ram at h'
+    unfold semantics_zkexpr at h'
+    unfold semantics_zkexpr.eval at h'
+    sorry
+    · case mpr.some v =>
+      simp [h'] at h
+      simp at *
+      cases h₁ : Option.isSome (semantics_zkexpr.eval witness v a)
+      sorry
+      sorry
 
 set_option grind.warning false
 
