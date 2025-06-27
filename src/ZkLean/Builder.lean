@@ -172,11 +172,11 @@ The function walks through the program step-by-step:
 • when it sees an operation, it uses `ZKOpInterp` to update the state, then
   continues with the rest of the program.
 
-Internally this is implemented with `FreeM.cataFreeM`, which is quite literally a `fold` over the `FreeM` tree.
+Internally this is implemented with `FreeM.foldM`, which is quite literally a `fold` over the `FreeM` tree.
 -/
 def runFold [Zero f] (p : ZKBuilder f α) (st : ZKBuilderState f)
     : (α × ZKBuilderState f) :=
-  (FreeM.cataFreeM
+  (FreeM.foldM
     -- pure case : just return the value, leaving the state untouched
     (fun a => fun st => (a, st))
     -- bind case : interpret one primitive with `ZKOpInterp`, then feed the

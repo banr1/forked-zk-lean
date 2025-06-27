@@ -131,15 +131,15 @@ lemma mapM_lift {F : Type u → Type v} {M : Type u → Type w} [Monad M] [Lawfu
     (lift op).mapM interp = interp op := by
   simp [FreeM.mapM, lift]
 
-/-- Catamorphism for the `FreeM` monad. The unique morphism from the initial algebra
+/-- The fold function for a `FreeM` monad. The unique morphism from the initial algebra
 to any other algebra of the endofunctor `FreeM F`.
 -/
-def cataFreeM {F : Type u → Type v} {α β : Type w}
+def foldM {F : Type u → Type v} {α β : Type w}
   (pureCase : α → β)
   (bindCase : {ι : Type u} → F ι → (ι → β) → β)
   : FreeM F α → β
 | .pure a => pureCase a
-| .liftBind op k => bindCase op (fun x => cataFreeM pureCase bindCase (k x))
+| .liftBind op k => bindCase op (fun x => foldM pureCase bindCase (k x))
 
 /--
 A predicate stating that `g : FreeM F α → M α` is an interpreter for the effect

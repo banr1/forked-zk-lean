@@ -257,7 +257,7 @@ def circuit12 : ZKBuilder (ZMod 7) PUnit := do
 
 
 theorem circuitEq2SoundTry [ZKField f]: (run_circuit' circuit1 [ (a: f), (a:f )] = true) := by
-  simp [run_circuit', runFold, circuit1, FreeM.cataFreeM, Witnessable.witness, ZKBuilder.witness, FreeM.cataFreeM]
+  simp [run_circuit', runFold, circuit1, FreeM.foldM, Witnessable.witness, ZKBuilder.witness, FreeM.foldM]
   unfold constrainEq2
   unfold ZKBuilder.constrainR1CS
   unfold default
@@ -267,7 +267,7 @@ theorem circuitEq2SoundTry [ZKField f]: (run_circuit' circuit1 [ (a: f), (a:f )]
   unfold default
   unfold instInhabitedList
   unfold Array.instInhabited
-  unfold FreeM.cataFreeM
+  unfold FreeM.foldM
   simp
   unfold bind
   unfold Monad.toBind
@@ -277,10 +277,10 @@ theorem circuitEq2SoundTry [ZKField f]: (run_circuit' circuit1 [ (a: f), (a:f )]
   simp
   repeat unfold FreeM.bind
   simp
-  simp [FreeM.cataFreeM, ZKOpInterp, semantics_constraints, semantics_zkexpr, semantics_zkexpr.eval, semantics_zkexpr.eval]
+  simp [FreeM.foldM, ZKOpInterp, semantics_constraints, semantics_zkexpr, semantics_zkexpr.eval, semantics_zkexpr.eval]
 
 theorem circuitEq2Eval [ZKField f]: (run_circuit' circuit1 [ (a: f), (b: f)] = (a == b)) := by
-  simp [run_circuit', runFold, circuit1, FreeM.cataFreeM, Witnessable.witness, ZKBuilder.witness, FreeM.cataFreeM]
+  simp [run_circuit', runFold, circuit1, FreeM.foldM, Witnessable.witness, ZKBuilder.witness, FreeM.foldM]
   unfold constrainEq2
   unfold ZKBuilder.constrainR1CS
   simp
@@ -290,7 +290,7 @@ theorem circuitEq2Eval [ZKField f]: (run_circuit' circuit1 [ (a: f), (b: f)] = (
   unfold default
   unfold instInhabitedList
   unfold Array.instInhabited
-  unfold FreeM.cataFreeM
+  unfold FreeM.foldM
   simp
   unfold bind
   unfold Monad.toBind
@@ -300,7 +300,7 @@ theorem circuitEq2Eval [ZKField f]: (run_circuit' circuit1 [ (a: f), (b: f)] = (
   simp
   repeat unfold FreeM.bind
   simp
-  simp [FreeM.cataFreeM, ZKOpInterp, semantics_constraints, semantics_zkexpr, semantics_zkexpr.eval, semantics_zkexpr.eval]
+  simp [FreeM.foldM, ZKOpInterp, semantics_constraints, semantics_zkexpr, semantics_zkexpr.eval, semantics_zkexpr.eval]
 
 #check StateT.run_bind
 attribute [local simp] StateT.run_bind
@@ -368,7 +368,7 @@ theorem constrainEq2Sound' [ZKField f] (a b:ZKExpr f) (witness: List f) :
     eval_exprf a s witness == eval_exprf b s witness ⌝
   ⦄
   := by
-  simp [run_circuit', runFold, circuit1, FreeM.cataFreeM, Witnessable.witness, ZKBuilder.witness, FreeM.cataFreeM]
+  simp [run_circuit', runFold, circuit1, FreeM.foldM, Witnessable.witness, ZKBuilder.witness, FreeM.foldM]
   unfold constrainEq2
   unfold ZKBuilder.constrainR1CS
   simp
@@ -380,7 +380,7 @@ theorem constrainEq2Sound' [ZKField f] (a b:ZKExpr f) (witness: List f) :
   unfold instWPZKBuilderArgZKBuilderStatePureOfZero
   unfold MPL.PredTrans.pure
   simp [runFold]
-  simp [eval_circuit, FreeM.cataFreeM, ZKOpInterp, eval_exprf, semantics, semantics_constraints]
+  simp [eval_circuit, FreeM.foldM, ZKOpInterp, eval_exprf, semantics, semantics_constraints]
   unfold ZKBuilderState.ram_sizes
   simp [semantics_zkexpr]
   simp [semantics_zkexpr.eval]
