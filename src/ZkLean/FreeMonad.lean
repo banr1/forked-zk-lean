@@ -132,7 +132,7 @@ lemma mapM_lift {F : Type u → Type v} {M : Type u → Type w} [Monad M] [Lawfu
   simp [FreeM.mapM, lift]
 
 /-- The fold function for a `FreeM` monad. The unique morphism from the initial algebra
-to any other algebra of the endofunctor `FreeM F`.
+to any other algebra.
 -/
 def foldM {F : Type u → Type v} {α β : Type w}
   (pureCase : α → β)
