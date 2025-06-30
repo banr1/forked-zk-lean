@@ -41,10 +41,10 @@ namespace FreeM
 /-- Map a function over a `FreeM` monad. -/
 def map {α β : Type _} {F : Type u → Type v} (f : α → β) : FreeM F α → FreeM F β
   | .pure a => .pure (f a)
-  | .liftBind op cont => .liftBind op (fun z => FreeM.map f (cont z))
+  | .liftBind op cont => .liftBind op (fun z => map f (cont z))
 
 instance {F : Type u → Type v} : Functor (FreeM F) where
-  map := FreeM.map
+  map := map
 
 instance {F : Type u → Type v} : LawfulFunctor (FreeM F) where
   map_const := rfl
@@ -65,16 +65,16 @@ protected def bind {a b : Type _} {F : Type u → Type v} (x : FreeM F a) (f : a
 FreeM F b :=
   match x with
   | .pure a => f a
-  | .liftBind op cont => .liftBind op (fun z => FreeM.bind  (cont z) f)
+  | .liftBind op cont => .liftBind op (fun z => .bind (cont z) f)
 
 /-- Lift an operation from the effect signature `f` into the `FreeM f` monad. -/
 @[simp]
 def lift {F : Type u → Type v} {ι : Type u} (op : F ι) : FreeM F ι :=
-  FreeM.liftBind op FreeM.pure
+  .liftBind op .pure
 
 instance {F : Type u → Type v} : Monad (FreeM F) where
-  pure := FreeM.pure
-  bind := FreeM.bind
+  pure := .pure
+  bind := .bind
 
 @[simp]
 lemma pure_eq_pure {F : Type u → Type v} {α : Type w} (a : α) :
