@@ -342,18 +342,32 @@ theorem constrainEq3Trivial [ZKField f] (a b c:ZKExpr f) :
   mpure h
   simp [h]
   unfold constrainEq3
-  unfold constrainEq2
-  unfold ZKBuilder.constrainR1CS
-  simp
-  unfold MPL.PredTrans.apply
-  unfold bind
-  unfold Monad.toBind
-  unfold instMonadZKBuilder
-  unfold inferInstance
-  unfold FreeM.instMonad
-  simp
-  repeat unfold FreeM.bind
-  constructor
+  sorry
+  -- mspec (constrainEq2Trivial a b)
+  -- mintro ∀s2
+  -- mpure h
+  -- rename' h => hAB
+  -- mspec (constrainEq2Trivial b c)
+  -- mintro ∀s3
+  -- mpure h
+  -- simp [h, hAB]
+
+  -- mintro h ∀old
+  -- mpure h
+  -- simp [h]
+  -- unfold constrainEq3
+  -- unfold constrainEq2
+  -- unfold ZKBuilder.constrainR1CS
+  -- simp
+  -- unfold MPL.PredTrans.apply
+  -- unfold bind
+  -- unfold Monad.toBind
+  -- unfold instMonadZKBuilder
+  -- unfold inferInstance
+  -- unfold FreeM.instMonad
+  -- simp
+  -- repeat unfold FreeM.bind
+  -- constructor
 
 @[simp]
 lemma isSome_eq_true_iff {α : Type*} {o : Option α} :
